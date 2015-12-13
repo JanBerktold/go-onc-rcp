@@ -25,6 +25,14 @@ func Dial(network, address string, prog Program) (*Client, error) {
 	return newClient(conn, prog), nil
 }
 
+func DialTCP(address string, prog Program) (*Client, error) {
+	return Dial("tcp", address, prog)
+}
+
+func DialUDP(address string, prog Program) (*Client, error) {
+	return Dial("udp", address, prog)
+}
+
 func newClient(conn net.Conn, prog Program) *Client {
 	client := &Client{
 		prog: prog,
