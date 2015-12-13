@@ -1,6 +1,7 @@
 package rpc
 
 import (
+	"fmt"
 	"log"
 	"net"
 )
@@ -11,8 +12,9 @@ type Program struct {
 }
 
 type Client struct {
-	prog Program
-	conn net.Conn
+	prog       Program
+	conn       net.Conn
+	byteStream bool
 }
 
 func Dial(network, address string, prog Program) (*Client, error) {
@@ -20,22 +22,27 @@ func Dial(network, address string, prog Program) (*Client, error) {
 	if err != nil {
 		return nil, err
 	}
-	return NewClient(conn, prog), nil
+	return newClient(conn, prog), nil
 }
 
-func NewClient(conn net.Conn, prog Program) *Client {
+func newClient(conn net.Conn, prog Program) *Client {
 	client := &Client{
 		prog: prog,
 		conn: conn,
+	}
+	if _, ok := conn.(*net.TCPConn); ok {
+		client.byteStream = true
 	}
 	go func(client *Client) {
 		buffer := make([]byte, 1500)
 		for {
 			n, err := client.conn.Read(buffer)
-			log.Println("READ BUFFER", n, err)
 			if err != nil {
 				return
 			}
+
+			reply, err := parseReply(buffer[0:n], client.byteStream)
+			fmt.Printf("%+v %v\n", reply, err)
 		}
 	}(client)
 	return client
@@ -48,6 +55,7 @@ func (c *Client) Call(id uint32) {
 		Program:    c.prog,
 		Process:    id,
 		auth:       0,
+		byteStream: c.byteStream,
 	}.Seralize()
 
 	log.Println(call, err)

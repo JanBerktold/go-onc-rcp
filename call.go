@@ -11,6 +11,7 @@ type call struct {
 	Program    Program
 	Process    uint32
 	auth       uint32
+	byteStream bool
 }
 
 func (c call) recordMarking(length uint32) uint32 {
@@ -20,15 +21,17 @@ func (c call) recordMarking(length uint32) uint32 {
 func (c call) Seralize() ([]byte, error) {
 	rd := bytes.NewBuffer(nil)
 
-	if err := binary.Write(rd, binary.BigEndian, c.recordMarking(40)); err != nil {
-		return nil, err
+	if c.byteStream {
+		if err := binary.Write(rd, binary.BigEndian, c.recordMarking(40)); err != nil {
+			return nil, err
+		}
 	}
 
 	if err := binary.Write(rd, binary.BigEndian, c.XId); err != nil {
 		return nil, err
 	}
 
-	if err := binary.Write(rd, binary.BigEndian, CALL); err != nil {
+	if err := binary.Write(rd, binary.BigEndian, type_call); err != nil {
 		return nil, err
 	}
 
