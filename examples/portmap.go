@@ -6,7 +6,7 @@ import (
 )
 
 func main() {
-	client, err := rpc.Dial("tcp", "localhost:111", rpc.Program{
+	client, err := rpc.DialTCP("localhost:111", rpc.Program{
 		Number:  100000,
 		Version: 2,
 	})

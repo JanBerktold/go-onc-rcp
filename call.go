@@ -3,6 +3,7 @@ package rpc
 import (
 	"bytes"
 	"encoding/binary"
+	"fmt"
 )
 
 type call struct {
@@ -51,6 +52,7 @@ func (c call) Seralize() ([]byte, error) {
 		return nil, err
 	}
 
+	fmt.Printf("%+v\n", c)
 	for i := 0; i < 4; i++ {
 		if err := binary.Write(rd, binary.BigEndian, c.auth); err != nil {
 			return nil, err

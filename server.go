@@ -38,6 +38,6 @@ func (s *Server) ListenTCP(network string, laddr *net.TCPAddr) error {
 
 }
 
-func (s *Server) ListenUDP(networking string, laddr *net.UDPAddr) error {
+func (s *Server) ListenUDP(network string, laddr *net.UDPAddr) error {
 	return nil
 }
