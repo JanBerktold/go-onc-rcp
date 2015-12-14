@@ -1,5 +1,7 @@
 package rpc
 
+type status interface{}
+
 type call_type uint32
 
 const (
@@ -22,15 +24,35 @@ const (
 	accept_prog_mismatch
 	accept_proc_unavail
 	accept_garbage_args
-	accept_ystem_err
+	accept_system_err
 )
 
+type success struct {
+	Payload []byte
+}
+
+type programMismatch struct {
+	low, high uint32
+}
+
+type programUnavailable struct{}
+type processUnavailable struct{}
+type garbargeArgs struct{}
+type systemError struct{}
+
+// reasons for reject of call
 type reject_stat uint32
 
 const (
 	reject_rpc_mismatch reject_stat = iota
 	reject_auth_error
 )
+
+type rpcMismatch struct {
+	low, high uint32
+}
+
+type authError struct{}
 
 type auth_flavor uint32
 

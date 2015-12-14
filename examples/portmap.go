@@ -11,7 +11,7 @@ func main() {
 		Version: 2,
 	})
 	log.Println(client, err)
-	client.Call(4)
+	log.Println(client.Call(4))
 	for {
 	}
 }

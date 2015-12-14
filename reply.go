@@ -7,27 +7,6 @@ import (
 	"log"
 )
 
-type status interface{}
-
-type success struct {
-	Payload []byte
-}
-
-type prog_unavail struct {
-}
-
-type prog_mismatch struct {
-	low, high uint32
-}
-
-type proc_unavail struct{}
-type garbarge_args struct{}
-type system_err struct{}
-
-type rpc_mismatch struct {
-	low, high uint32
-}
-
 type reply struct {
 	XId      uint32
 	Accepted bool
@@ -109,7 +88,7 @@ func parseReply(buffer []byte, byteStream bool) (reply, error) {
 				return result, err
 			}
 		case accept_prog_mismatch:
-			result.Status = prog_mismatch{}
+			result.Status = programMismatch{}
 		}
 	case false:
 		reject_status := reject_stat(0)
@@ -119,7 +98,7 @@ func parseReply(buffer []byte, byteStream bool) (reply, error) {
 
 		switch reject_status {
 		case reject_rpc_mismatch:
-			result.Status = rpc_mismatch{}
+			result.Status = rpcMismatch{}
 		case reject_auth_error:
 		}
 	}
