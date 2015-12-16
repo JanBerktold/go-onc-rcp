@@ -12,7 +12,10 @@ type call struct {
 	Program    Program
 	Process    uint32
 	auth       uint32
-	byteStream bool
+
+	byteStream   bool
+	requireReply bool
+	dataTarget   interface{}
 }
 
 func (c call) recordMarking(length uint32) uint32 {

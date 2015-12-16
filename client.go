@@ -1,11 +1,14 @@
 package rpc
 
 import (
-	"bytes"
-	"github.com/davecgh/go-xdr/xdr2"
+	"errors"
 	"log"
 	"net"
 	"sync"
+)
+
+var (
+	ErrTargetSet = errors.New("Reply data destination has already been set")
 )
 
 type Program struct {
@@ -99,31 +102,57 @@ func (c *Client) obtainXId() (uint32, chan reply) {
 	return c.obtainXId()
 }
 
-type callModifier func(*call)
+type callModifier func(*call) error
+
+type bytesTarget struct {
+	Target []byte
+}
+
+type structTarget struct {
+	Target interface{}
+}
 
 func NoReply() callModifier {
-	return func(c *call) {
+	return func(c *call) error {
+		c.requireReply = true
+		return nil
 	}
 }
 func ToStruct(data interface{}) callModifier {
-	return func(c *call) {
+	return func(c *call) error {
+		if c.dataTarget != nil {
+			return ErrTargetSet
+		}
+		c.dataTarget = structTarget{
+			Target: data,
+		}
+		return nil
 	}
 }
 
 func ToBytes(array []byte) callModifier {
-	return func(c *call) {
+	return func(c *call) error {
+		if c.dataTarget != nil {
+			return ErrTargetSet
+		}
+		c.dataTarget = bytesTarget{
+			Target: array,
+		}
+		return nil
 	}
 }
 func WithStruct(data interface{}) callModifier {
-	return func(c *call) {
+	return func(c *call) error {
+		return nil
 	}
 }
 func WithBytes(array []byte) callModifier {
-	return func(c *call) {
+	return func(c *call) error {
+		return nil
 	}
 }
 
-func (c *Client) Call(proc uint32, modifiers ...callModifier) ([]byte, error) {
+func (c *Client) Call(proc uint32, modifiers ...callModifier) error {
 	id, channel := c.obtainXId()
 	request := call{
 		XId:        id,
@@ -134,21 +163,29 @@ func (c *Client) Call(proc uint32, modifiers ...callModifier) ([]byte, error) {
 		byteStream: c.byteStream,
 	}
 
+	for _, modifier := range modifiers {
+		if err := modifier(request); err != nil {
+			return err
+		}
+	}
+
 	call, err := request.Seralize()
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	if _, err := c.conn.Write(call); err != nil {
-		return nil, err
+		return err
 	}
 
-	reply := <-channel
-	switch reply.Status.(type) {
-	case success:
-		return reply.Status.(success).Payload, nil
-	default:
-		log.Fatal("UNKNOWN SWITCH")
+	if request.RequireReply {
+		reply := <-channel
+		switch reply.Status.(type) {
+		case success:
+			return reply.Status.(success).Payload, nil
+		default:
+			log.Fatal("UNKNOWN SWITCH")
+		}
 	}
-	return nil, nil
+	return nil
 }
