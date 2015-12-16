@@ -1,6 +1,7 @@
 package rpc
 
-type Handler func(ResponseWriter)
+import (
+	"io"
+)
 
-type ResponseWriter interface {
-}
+type Handler func(io.Writer)

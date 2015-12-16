@@ -3,18 +3,29 @@ package rpc
 import (
 	"bytes"
 	"encoding/binary"
+	"github.com/davecgh/go-xdr/xdr2"
 	"io"
 	"log"
 )
 
 type reply struct {
-	XId      uint32
-	Accepted bool
-	Status   status
+	XId    uint32
+	Status status
 }
 
-func (r reply) Seralize() ([]byte, error) {
-	return nil, nil
+func (r reply) Seralize(byteStream bool) ([]byte, error) {
+	w := bytes.Buffer{}
+	enc := xdr.NewEncoder(&w)
+
+	if byteStream {
+
+	}
+
+	if _, err := enc.EncodeUint(r.XId); err != nil {
+		return nil, err
+	}
+
+	return w.Bytes(), nil
 }
 
 func parseVerification(reader io.Reader) error {
@@ -28,7 +39,7 @@ func parseVerification(reader io.Reader) error {
 	case auth_none:
 		log.Println("NONE")
 	default:
-		log.Println(stat)
+		log.Fatalln(stat)
 	}
 
 	return nil
@@ -38,10 +49,8 @@ func parseReply(buffer []byte, byteStream bool) (reply, error) {
 	result := reply{}
 	reader := bytes.NewBuffer(buffer)
 
-	waste := uint32(0)
-	mtype := call_type(0)
-
 	if byteStream {
+		waste := uint32(0)
 		if err := binary.Read(reader, binary.BigEndian, &waste); err != nil {
 			return result, err
 		}
@@ -51,6 +60,7 @@ func parseReply(buffer []byte, byteStream bool) (reply, error) {
 		return result, err
 	}
 
+	mtype := call_type(0)
 	if err := binary.Read(reader, binary.BigEndian, &mtype); err != nil {
 		return result, err
 	}
@@ -65,9 +75,8 @@ func parseReply(buffer []byte, byteStream bool) (reply, error) {
 	if err := binary.Read(reader, binary.BigEndian, &reply_stat); err != nil {
 		return result, err
 	}
-	result.Accepted = reply_stat == msg_accepted
 
-	switch result.Accepted {
+	switch reply_stat == msg_accepted {
 	case true:
 		if err := parseVerification(reader); err != nil {
 			return result, err
@@ -89,6 +98,14 @@ func parseReply(buffer []byte, byteStream bool) (reply, error) {
 			}
 		case accept_prog_mismatch:
 			result.Status = programMismatch{}
+		case accept_prog_unavail:
+			result.Status = programUnavailable{}
+		case accept_proc_unavail:
+			result.Status = processUnavailable{}
+		case accept_garbage_args:
+			result.Status = garbargeArgs{}
+		case accept_system_err:
+			result.Status = systemError{}
 		}
 	case false:
 		reject_status := reject_stat(0)

@@ -12,6 +12,4 @@ func main() {
 	})
 	log.Println(client, err)
 	log.Println(client.Call(4))
-	for {
-	}
 }

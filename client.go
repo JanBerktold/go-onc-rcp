@@ -1,6 +1,8 @@
 package rpc
 
 import (
+	"bytes"
+	"github.com/davecgh/go-xdr/xdr2"
 	"log"
 	"net"
 	"sync"
@@ -72,6 +74,7 @@ func newClient(conn net.Conn, prog Program) *Client {
 }
 
 func (c *Client) obtainXId() (uint32, chan reply) {
+	log.Println(c)
 	for i := 0; i < len(c.replies); i++ {
 		if c.replies[i] == nil {
 			c.repliesMut.Lock()
@@ -80,10 +83,9 @@ func (c *Client) obtainXId() (uint32, chan reply) {
 				c.replies[i] = channel
 				c.repliesMut.Unlock()
 				return uint32(i), channel
-			} else {
-				c.repliesMut.Unlock()
-				continue
 			}
+			c.repliesMut.Unlock()
+			continue
 		}
 	}
 
@@ -97,17 +99,42 @@ func (c *Client) obtainXId() (uint32, chan reply) {
 	return c.obtainXId()
 }
 
-func (c *Client) Call(proc uint32) ([]byte, error) {
+type callModifier func(*call)
+
+func NoReply() callModifier {
+	return func(c *call) {
+	}
+}
+func ToStruct(data interface{}) callModifier {
+	return func(c *call) {
+	}
+}
+
+func ToBytes(array []byte) callModifier {
+	return func(c *call) {
+	}
+}
+func WithStruct(data interface{}) callModifier {
+	return func(c *call) {
+	}
+}
+func WithBytes(array []byte) callModifier {
+	return func(c *call) {
+	}
+}
+
+func (c *Client) Call(proc uint32, modifiers ...callModifier) ([]byte, error) {
 	id, channel := c.obtainXId()
-	call, err := call{
+	request := call{
 		XId:        id,
-		RpcVersion: 2,
+		RPCVersion: 2,
 		Program:    c.prog,
 		Process:    proc,
 		auth:       0,
 		byteStream: c.byteStream,
-	}.Seralize()
+	}
 
+	call, err := request.Seralize()
 	if err != nil {
 		return nil, err
 	}
@@ -124,12 +151,4 @@ func (c *Client) Call(proc uint32) ([]byte, error) {
 		log.Fatal("UNKNOWN SWITCH")
 	}
 	return nil, nil
-}
-
-func (c *Client) CallNoReply(proc uint32) error {
-	return nil
-}
-
-func (c *Client) CallWithStructReply(proc uint32, reply interface{}) error {
-	return nil
 }

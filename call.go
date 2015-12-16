@@ -8,7 +8,7 @@ import (
 
 type call struct {
 	XId        uint32
-	RpcVersion uint32 /* must be equal to two (2) */
+	RPCVersion uint32 /* must be equal to two (2) */
 	Program    Program
 	Process    uint32
 	auth       uint32
@@ -36,7 +36,7 @@ func (c call) Seralize() ([]byte, error) {
 		return nil, err
 	}
 
-	if err := binary.Write(rd, binary.BigEndian, c.RpcVersion); err != nil {
+	if err := binary.Write(rd, binary.BigEndian, c.RPCVersion); err != nil {
 		return nil, err
 	}
 
