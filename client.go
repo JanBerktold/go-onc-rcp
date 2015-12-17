@@ -164,7 +164,7 @@ func (c *Client) Call(proc uint32, modifiers ...callModifier) error {
 	}
 
 	for _, modifier := range modifiers {
-		if err := modifier(request); err != nil {
+		if err := modifier(&request); err != nil {
 			return err
 		}
 	}
@@ -178,11 +178,11 @@ func (c *Client) Call(proc uint32, modifiers ...callModifier) error {
 		return err
 	}
 
-	if request.RequireReply {
+	if request.requireReply {
 		reply := <-channel
 		switch reply.Status.(type) {
 		case success:
-			return reply.Status.(success).Payload, nil
+			return nil
 		default:
 			log.Fatal("UNKNOWN SWITCH")
 		}

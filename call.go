@@ -35,7 +35,7 @@ func (c call) Seralize() ([]byte, error) {
 		return nil, err
 	}
 
-	if err := binary.Write(rd, binary.BigEndian, type_call); err != nil {
+	if err := binary.Write(rd, binary.BigEndian, typeCall); err != nil {
 		return nil, err
 	}
 

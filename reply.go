@@ -29,14 +29,14 @@ func (r reply) Seralize(byteStream bool) ([]byte, error) {
 }
 
 func parseVerification(reader io.Reader) error {
-	stat := auth_flavor(0)
+	stat := authFlavor(0)
 
 	if err := binary.Read(reader, binary.BigEndian, &stat); err != nil {
 		return err
 	}
 
 	switch stat {
-	case auth_none:
+	case authNone:
 		log.Println("NONE")
 	default:
 		log.Fatalln(stat)
@@ -60,35 +60,35 @@ func parseReply(buffer []byte, byteStream bool) (reply, error) {
 		return result, err
 	}
 
-	mtype := call_type(0)
+	mtype := callType(0)
 	if err := binary.Read(reader, binary.BigEndian, &mtype); err != nil {
 		return result, err
 	}
 
-	if mtype != type_reply {
+	if mtype != typeReply {
 		log.Println("EXPECTED REPLY")
 		return result, nil
 	}
 
 	// REPLY STATUS
-	reply_stat := msg_stat(0)
-	if err := binary.Read(reader, binary.BigEndian, &reply_stat); err != nil {
+	replyStatus := msgStatus(0)
+	if err := binary.Read(reader, binary.BigEndian, &replyStatus); err != nil {
 		return result, err
 	}
 
-	switch reply_stat == msg_accepted {
+	switch replyStatus == msgAccepted {
 	case true:
 		if err := parseVerification(reader); err != nil {
 			return result, err
 		}
 
-		accept_status := accept_stat(0)
-		if err := binary.Read(reader, binary.BigEndian, &accept_status); err != nil {
+		specifiedStatus := acceptStatus(0)
+		if err := binary.Read(reader, binary.BigEndian, &specifiedStatus); err != nil {
 			return result, err
 		}
 
-		switch accept_status {
-		case accept_sucess:
+		switch specifiedStatus {
+		case acceptSucess:
 			success := success{
 				Payload: make([]byte, reader.Len()),
 			}
@@ -96,27 +96,27 @@ func parseReply(buffer []byte, byteStream bool) (reply, error) {
 			if err := binary.Read(reader, binary.BigEndian, &success.Payload); err != nil {
 				return result, err
 			}
-		case accept_prog_mismatch:
+		case acceptProgramMismatch:
 			result.Status = programMismatch{}
-		case accept_prog_unavail:
+		case acceptProgramUnavailable:
 			result.Status = programUnavailable{}
-		case accept_proc_unavail:
+		case acceptProcessUnavailable:
 			result.Status = processUnavailable{}
-		case accept_garbage_args:
+		case acceptGarbageArguments:
 			result.Status = garbargeArgs{}
-		case accept_system_err:
+		case acceptSystemError:
 			result.Status = systemError{}
 		}
 	case false:
-		reject_status := reject_stat(0)
-		if err := binary.Read(reader, binary.BigEndian, &reject_status); err != nil {
+		specifiedStatus := rejectStatus(0)
+		if err := binary.Read(reader, binary.BigEndian, &specifiedStatus); err != nil {
 			return result, err
 		}
 
-		switch reject_status {
-		case reject_rpc_mismatch:
+		switch specifiedStatus {
+		case rejectRPCMismatch:
 			result.Status = rpcMismatch{}
-		case reject_auth_error:
+		case rejectAuthenticationError:
 		}
 	}
 
