@@ -103,14 +103,6 @@ func (c *Client) obtainXId() (uint32, chan reply) {
 
 type callModifier func(*call) error
 
-type bytesTarget struct {
-	Target []byte
-}
-
-type structTarget struct {
-	Target interface{}
-}
-
 func IgnoreReply() callModifier {
 	return func(c *call) error {
 		c.ignoreReply = true

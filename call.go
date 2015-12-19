@@ -15,7 +15,8 @@ type call struct {
 
 	byteStream  bool
 	ignoreReply bool
-	dataTarget  interface{}
+	dataTarget  dataRepresentation
+	paramSource dataRepresentation
 }
 
 func (c call) recordMarking(length uint32) uint32 {

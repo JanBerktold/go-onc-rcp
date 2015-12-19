@@ -77,6 +77,7 @@ func parseReply(buffer []byte, byteStream bool) (reply, error) {
 		return result, err
 	}
 
+	log.Println("AT END OF PARSING", result)
 	log.Println("REPLY STATUS", replyStatus == msgAccepted)
 	switch replyStatus == msgAccepted {
 	case true:
