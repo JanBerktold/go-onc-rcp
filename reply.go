@@ -48,6 +48,7 @@ func parseVerification(reader io.Reader) error {
 func parseReply(buffer []byte, byteStream bool) (reply, error) {
 	result := reply{}
 	reader := bytes.NewBuffer(buffer)
+	log.Println(buffer)
 
 	if byteStream {
 		waste := uint32(0)
@@ -76,6 +77,7 @@ func parseReply(buffer []byte, byteStream bool) (reply, error) {
 		return result, err
 	}
 
+	log.Println("REPLY STATUS", replyStatus == msgAccepted)
 	switch replyStatus == msgAccepted {
 	case true:
 		if err := parseVerification(reader); err != nil {
@@ -106,6 +108,8 @@ func parseReply(buffer []byte, byteStream bool) (reply, error) {
 			result.Status = garbargeArguments{}
 		case acceptSystemError:
 			result.Status = systemError{}
+		default:
+			log.Fatal("UNKNOWN SUCCESS")
 		}
 	case false:
 		specifiedStatus := rejectStatus(0)
@@ -117,6 +121,8 @@ func parseReply(buffer []byte, byteStream bool) (reply, error) {
 		case rejectRPCMismatch:
 			result.Status = rpcMismatch{}
 		case rejectAuthenticationError:
+		default:
+			log.Fatal("UNKNOWN FAILURE")
 		}
 	}
 

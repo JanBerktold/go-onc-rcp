@@ -1,5 +1,9 @@
 package rpc
 
+import (
+	"errors"
+)
+
 type status interface{}
 
 type callType uint32
@@ -50,3 +54,34 @@ type rpcMismatch struct {
 }
 
 type authError struct{}
+
+var (
+	ErrProgramMismatch   = errors.New("Program Version mismatch")
+	ErrProgramUnavilable = errors.New("Program not avilable")
+	ErrProcessUnavilable = errors.New("Process not available")
+	ErrGarbargeArguments = errors.New("Arguments not interpreted correctly")
+	ErrSystemError       = errors.New("Generic system error")
+	ErrRPCMismatch       = errors.New("Wrong RPC version")
+	ErrAuthError         = errors.New("Authentication error")
+	ErrUnknownError      = errors.New("Server returned unknown error")
+)
+
+func toError(st status) error {
+	switch st.(type) {
+	case programMismatch:
+		return ErrProgramMismatch
+	case programUnavailable:
+		return ErrProgramUnavilable
+	case processUnavailable:
+		return ErrProcessUnavilable
+	case garbargeArguments:
+		return ErrGarbargeArguments
+	case systemError:
+		return ErrSystemError
+	case rpcMismatch:
+		return ErrRPCMismatch
+	case authError:
+		return ErrAuthError
+	}
+	return ErrUnknownError
+}

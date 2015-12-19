@@ -77,7 +77,6 @@ func newClient(conn net.Conn, prog Program) *Client {
 }
 
 func (c *Client) obtainXId() (uint32, chan reply) {
-	log.Println(c)
 	for i := 0; i < len(c.replies); i++ {
 		if c.replies[i] == nil {
 			c.repliesMut.Lock()
@@ -180,10 +179,9 @@ func (c *Client) Call(proc uint32, modifiers ...callModifier) error {
 
 	if !request.ignoreReply {
 		reply := <-channel
+		log.Println(reply)
 		switch reply.Status.(type) {
 		case success:
-			status := reply.Status.(success)
-			log.Println(reply, status)
 			switch request.dataTarget.(type) {
 			case bytesTarget:
 				log.Println("bytes")
@@ -191,7 +189,7 @@ func (c *Client) Call(proc uint32, modifiers ...callModifier) error {
 				log.Println("struct")
 			}
 		default:
-			log.Fatal("UNKNOWN SWITCH")
+			return toError(reply.Status)
 		}
 	}
 	return nil
