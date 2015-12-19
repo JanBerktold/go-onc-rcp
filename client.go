@@ -112,9 +112,9 @@ type structTarget struct {
 	Target interface{}
 }
 
-func NoReply() callModifier {
+func IgnoreReply() callModifier {
 	return func(c *call) error {
-		c.requireReply = true
+		c.ignoreReply = true
 		return nil
 	}
 }
@@ -178,11 +178,18 @@ func (c *Client) Call(proc uint32, modifiers ...callModifier) error {
 		return err
 	}
 
-	if request.requireReply {
+	if !request.ignoreReply {
 		reply := <-channel
 		switch reply.Status.(type) {
 		case success:
-			return nil
+			status := reply.Status.(success)
+			log.Println(reply, status)
+			switch request.dataTarget.(type) {
+			case bytesTarget:
+				log.Println("bytes")
+			case structTarget:
+				log.Println("struct")
+			}
 		default:
 			log.Fatal("UNKNOWN SWITCH")
 		}

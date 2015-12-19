@@ -103,7 +103,7 @@ func parseReply(buffer []byte, byteStream bool) (reply, error) {
 		case acceptProcessUnavailable:
 			result.Status = processUnavailable{}
 		case acceptGarbageArguments:
-			result.Status = garbargeArgs{}
+			result.Status = garbargeArguments{}
 		case acceptSystemError:
 			result.Status = systemError{}
 		}

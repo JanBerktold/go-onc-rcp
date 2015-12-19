@@ -13,9 +13,9 @@ type call struct {
 	Process    uint32
 	auth       uint32
 
-	byteStream   bool
-	requireReply bool
-	dataTarget   interface{}
+	byteStream  bool
+	ignoreReply bool
+	dataTarget  interface{}
 }
 
 func (c call) recordMarking(length uint32) uint32 {
