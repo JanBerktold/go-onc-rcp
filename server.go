@@ -5,9 +5,11 @@ import (
 	"net"
 )
 
+// Server represents a socket which can host multipli RPC programs
 type Server struct {
 }
 
+// Register is used to make a RPC call available
 func (s *Server) Register(prog Program, handler Handler) {
 
 }
@@ -36,6 +38,8 @@ func (s *Server) handleListener(listener net.Listener) error {
 	}
 }
 
+// ListenTCP starts the server on the specified TCP address. Method call
+// blocks as long as the server is running.
 func (s *Server) ListenTCP(network string, laddr *net.TCPAddr) error {
 	listener, err := net.ListenTCP(network, laddr)
 	if err != nil {
@@ -44,6 +48,8 @@ func (s *Server) ListenTCP(network string, laddr *net.TCPAddr) error {
 	return s.handleListener(listener)
 }
 
+// ListenUDP starts the server on the specified UDP address. Method call
+// blocks as long as the server is running.
 func (s *Server) ListenUDP(network string, laddr *net.UDPAddr) error {
 	return nil
 }

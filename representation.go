@@ -12,22 +12,24 @@ type dataRepresentation interface {
 	Len() (int, error)
 }
 
-type bytesTarget struct {
-	Target []byte
+type bytesData struct {
+	Data []byte
 }
 
-func (b bytesTarget) Len() (int, error) {
-	return len(b.Target), nil
+func (b bytesData) Len() (int, error) {
+	return len(b.Data), nil
 }
 
-type structTarget struct {
-	Target        interface{}
+// Reprents a pointer to a struct which is used as data. Also keeps a local cache of the
+// seralized struct if used as data source.
+type structData struct {
+	Data          interface{}
 	SeralizedData []byte
 }
 
-func (s structTarget) Seralize() error {
+func (s structData) Seralize() error {
 	buffer := bytes.NewBuffer(nil)
-	_, err := xdr.Marshal(buffer, s.Target)
+	_, err := xdr.Marshal(buffer, s.Data)
 	if err != nil {
 		return err
 	}
@@ -35,7 +37,7 @@ func (s structTarget) Seralize() error {
 	return nil
 }
 
-func (s structTarget) Len() (int, error) {
+func (s structData) Len() (int, error) {
 	if len(s.SeralizedData) == 0 {
 		err := s.Seralize()
 		if err != nil {

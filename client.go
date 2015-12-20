@@ -114,8 +114,8 @@ func ToStruct(data interface{}) callModifier {
 		if c.dataTarget != nil {
 			return ErrTargetSet
 		}
-		c.dataTarget = structTarget{
-			Target: data,
+		c.dataTarget = structData{
+			Data: data,
 		}
 		return nil
 	}
@@ -126,19 +126,25 @@ func ToBytes(array []byte) callModifier {
 		if c.dataTarget != nil {
 			return ErrTargetSet
 		}
-		c.dataTarget = bytesTarget{
-			Target: array,
+		c.dataTarget = bytesData{
+			Data: array,
 		}
 		return nil
 	}
 }
 func WithStruct(data interface{}) callModifier {
 	return func(c *call) error {
+		c.paramSource = structData{
+			Data: data,
+		}
 		return nil
 	}
 }
 func WithBytes(array []byte) callModifier {
 	return func(c *call) error {
+		c.paramSource = bytesData{
+			Data: array,
+		}
 		return nil
 	}
 }
@@ -175,9 +181,9 @@ func (c *Client) Call(proc uint32, modifiers ...callModifier) error {
 		switch reply.Status.(type) {
 		case success:
 			switch request.dataTarget.(type) {
-			case bytesTarget:
+			case bytesData:
 				log.Println("bytes")
-			case structTarget:
+			case structData:
 				log.Println("struct")
 			}
 		default:
